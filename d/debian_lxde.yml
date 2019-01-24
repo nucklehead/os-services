@@ -41,4 +41,4 @@ console:
   ipc: host
   net: host
   uts: host
-  shm_size: '1g'
+  shm_size: banana
