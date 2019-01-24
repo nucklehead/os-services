@@ -7,7 +7,7 @@ console:
     io.rancher.os.after: network
     io.docker.compose.rebuild: "false"
     io.rancher.os.console: debian
-  extra_args: [--shm-size=4g]
+  shm_size: '2gb'
   volumes_from:
   - all-volumes
   volumes:
