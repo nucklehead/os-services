@@ -1,7 +1,6 @@
 console:
   image: ${REGISTRY_DOMAIN}/jpmsb/os-debianconsole:v1.5.0${SUFFIX}
   command: ros console-init
-  shm_size: 2048M
   privileged: true
   labels:
     io.rancher.os.scope: system
@@ -42,3 +41,4 @@ console:
   ipc: host
   net: host
   uts: host
+  shm_size: '1g'
