@@ -1,4 +1,4 @@
-console:
+console2:
   image: ${REGISTRY_DOMAIN}/jpmsb/os-debianconsole:v1.5.0${SUFFIX}
   command: ros console-init
   privileged: true
@@ -41,4 +41,4 @@ console:
   ipc: host
   net: host
   uts: host
-  shm_size: banana
+  shm_size: 2048M
