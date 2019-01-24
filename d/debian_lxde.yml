@@ -8,12 +8,12 @@ console:
     io.rancher.os.after: network
     io.docker.compose.rebuild: "false"
     io.rancher.os.console: debian_lxde
-  volumes_from:
-  - all-volumes
+  # volumes_from:
+  # - all-volumes
   volumes:
   - /media:/media:shared
   - /mnt:/mnt:shared
-  - /dev/shm:/dev/shm
+  - /host/dev/shm:/dev/shm
   restart: always
   pid: host
   ipc: host
