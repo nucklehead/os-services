@@ -20,7 +20,7 @@ services:
 consoles:
 - alpine
 - centos
-- debian
+- debian_lxde
 - fedora
 - ubuntu
 engines:
