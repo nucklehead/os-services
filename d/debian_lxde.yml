@@ -12,32 +12,6 @@ console:
   volumes:
   - /media:/media:shared
   - /mnt:/mnt:shared
-  - /usr/bin/ros:/usr/bin/ros:rprivate
-  - /usr/bin/system-docker:/usr/bin/system-docker:rprivate
-  - /var/lib/user-docker:/var/lib/docker:rprivate
-  - /media:/media:shared
-  - /run:/run:rprivate
-  - /var/lib/rancher:/var/lib/rancher:rprivate
-  - /home:/home:rprivate
-  - /etc/resolv.conf:/etc/resolv.conf:rprivate
-  - /var/lib/boot2docker:/var/lib/boot2docker:rprivate
-  - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt.rancher:rprivate
-  - /var/lib/m-user-docker:/var/lib/m-user-docker:rprivate
-  - /usr/share/ros:/usr/share/ros:rprivate
-  - /var/log:/var/log:rprivate
-  - /mnt:/mnt:shared
-  - /var/run:/var/run:rprivate
-  - /etc/selinux:/etc/selinux:rprivate
-  - /var/lib/kubelet:/var/lib/kubelet:rprivate
-  - /lib/modules:/lib/modules:rprivate
-  - /etc/docker:/etc/docker:rprivate
-  - /var/lib/rancher/conf:/var/lib/rancher/conf:rprivate
-  - /opt:/opt:rprivate
-  - /usr/bin/system-docker-runc:/usr/bin/system-docker-runc:rprivate
-  - /etc/logrotate.d:/etc/logrotate.d:rprivate
-  - /var/lib/rancher/cache:/var/lib/rancher/cache:rprivate
-  - /etc/hosts:/etc/hosts:rprivate
-  - /lib/firmware:/lib/firmware:rprivate
   restart: always
   pid: host
   ipc: host
