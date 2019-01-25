@@ -13,9 +13,6 @@ console:
   volumes:
   - /media:/media:shared
   - /mnt:/mnt:shared
-  - /opt/passwd:/etc/passwd
-  - /opt/shadow:/etc/shadow
-  - /opt/group:/etc/group
   restart: always
   pid: host
   ipc: host
