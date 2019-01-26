@@ -20,8 +20,10 @@ services:
 consoles:
 - alpine
 - centos
-- debian-lxde
 - debian
+- debian-lxde
+- debian-xfce
+- debian-mate
 - fedora
 - ubuntu
 engines:
