@@ -24,6 +24,8 @@ consoles:
 - debian-lxde
 - debian-xfce
 - debian-mate
+- debian-kde
+- debian-gnome
 - fedora
 - ubuntu
 engines:
