@@ -1,6 +1,6 @@
 console:
   image: ${REGISTRY_DOMAIN}/jpmsb/os-debian-lxdeconsole:v1.5.0${SUFFIX}
-  command: ros console-init
+  command: iniciar-tudo
   privileged: true
   labels:
     io.rancher.os.scope: system
