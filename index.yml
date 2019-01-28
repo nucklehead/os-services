@@ -22,7 +22,7 @@ consoles:
 - centos
 - debian
 - debian-lxde
-- debian-xfce4
+- debian-xfce
 - debian-mate
 - debian-kde
 - debian-gnome
