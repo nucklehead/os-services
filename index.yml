@@ -21,11 +21,11 @@ consoles:
 - alpine
 - centos
 - debian
-- debian-lxde
-- debian-xfce
-- debian-mate
-- debian-kde
 - debian-gnome
+- debian-kde
+- debian-lxde
+- debian-mate
+- debian-xfce
 - fedora
 - ubuntu
 engines:
