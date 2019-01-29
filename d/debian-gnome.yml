@@ -1,11 +1,12 @@
-  image: ${REGISTRY_DOMAIN}/jpmsb/os-debian-gnomeconsole:v1.5.0${SUFFIX}
+console:
+  image: ${REGISTRY_DOMAIN}/jpmsb/os-debian-lxdeconsole:v1.5.0${SUFFIX}
   command: iniciar-tudo
   privileged: true
   labels:
     io.rancher.os.scope: system
     io.rancher.os.after: network
     io.docker.compose.rebuild: "false"
-    io.rancher.os.console: debian_gnome
+    io.rancher.os.console: debian-lxde
   shm_size: 2048M
   volumes_from:
   - all-volumes
