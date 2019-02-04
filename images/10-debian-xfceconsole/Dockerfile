@@ -22,7 +22,18 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                         qemu qemu-kvm qemu-utils engrampa mate-system-monitor gnome-disk-utility \ 
                         apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils \
                         xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
-                        iptraf telnet wireshark && \
+                        iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
+                        aspell-pt-br libreoffice-lightproof-pt-br \
+    \
+    # Adicionando Backports para o LibreOffice
+    echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
+    apt update && \
+    \
+    # Instalando o LibreOffice
+    apt -y -q install -t stretch-backports libreoffice libreoffice-l10n-pt-br libreoffice-help-pt-br libreoffice-officebean libreoffice-avmedia-backend-vlc libreoffice-gtk3 libreoffice-pdfimport libreoffice-subsequentcheckbase && \
+    \
+    # Comentando Backport
+    echo "# deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
     \
     # Adicionando chaves de repositorios
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90 && \
@@ -95,6 +106,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "mount -o remount,size=1G /dev/shm" >> /usr/local/bin/iniciar-tudo && \
     echo "service dbus start" >> /usr/local/bin/iniciar-tudo && \
     echo "service udev start" >> /usr/local/bin/iniciar-tudo && \
+    echo "service rsyslog start" >> /usr/local/bin/iniciar-tudo && \
     echo "service libvirtd start" >> /usr/local/bin/iniciar-tudo && \
     echo "service virtlogd start" >> /usr/local/bin/iniciar-tudo && \
     echo 'echo "0 2147483647" > /proc/sys/net/ipv4/ping_group_range' >> /usr/local/bin/iniciar-tudo && \
@@ -102,6 +114,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "ntpd" >> /usr/local/bin/iniciar-tudo && \
     echo "service lightdm start &" >> /usr/local/bin/iniciar-tudo && \
     echo "ros console-init" >> /usr/local/bin/iniciar-tudo && \
+    \
+    # Alterando as permissoes do script de inicio
     chmod 100 /usr/local/bin/iniciar-tudo
 
 ENTRYPOINT ["/usr/bin/ros", "entrypoint"]
