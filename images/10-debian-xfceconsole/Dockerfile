@@ -23,7 +23,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                         apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils \
                         xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
                         iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
-                        aspell-pt-br libreoffice-lightproof-pt-br \
+                        aspell-pt-br libreoffice-lightproof-pt-br network-manager-gnome && \
     \
     # Adicionando Backports para o LibreOffice
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -109,6 +109,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "service rsyslog start" >> /usr/local/bin/iniciar-tudo && \
     echo "service libvirtd start" >> /usr/local/bin/iniciar-tudo && \
     echo "service virtlogd start" >> /usr/local/bin/iniciar-tudo && \
+    echo "service network-manager start" >> /usr/local/bin/iniciar-tudo && \
+    echo "modprobe -r evbug" >> /usr/local/bin/iniciar-tudo && \
     echo 'echo "0 2147483647" > /proc/sys/net/ipv4/ping_group_range' >> /usr/local/bin/iniciar-tudo && \
     echo "cron" >> /usr/local/bin/iniciar-tudo && \
     echo "ntpd" >> /usr/local/bin/iniciar-tudo && \
