@@ -20,10 +20,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                         qasconfig playonlinux wine winetricks git cmake rtl-sdr eom dirmngr okular \
                         virt-manager qemu unrar lzop bzip2 galculator libvirt0 libvirt-daemon-system \
                         qemu qemu-kvm qemu-utils engrampa mate-system-monitor gnome-disk-utility \ 
-                        apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils \
+                        apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils libglib2.0-bin \
                         xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
                         iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
-                        aspell-pt-br libreoffice-lightproof-pt-br network-manager-gnome && \
+                        aspell-pt-br libreoffice-lightproof-pt-br network-manager-gnome gparted \
+                        dconf-tools pluma && \
     \
     # Adicionando Backports para o LibreOffice
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -45,7 +46,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     \
     # Instalando pacotes da interface grafica em si e a biblioteca de DVD libdvdcss2
-    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 && \
+    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme && \
     \
     # Instalando o tema Adpta
     wget jpmsb.sj.ifsc.edu.br/adapta.tar.xz -O /adapta.tar.xz && \
@@ -74,6 +75,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     \
     # Ajustes no lightdm e libvirt
     sed -i '105s/.*/greeter-hide-users=false/' /etc/lightdm/lightdm.conf && \
+    sed -i '22s/.*/greeter-user=root/' /etc/lightdm/lightdm.conf && \
     sed -i '85s/.*/unix_sock_group = "rancher"/' /etc/libvirt/libvirtd.conf && \
     sed -i '102s/.*/unix_sock_rw_perms = "0770"/' /etc/libvirt/libvirtd.conf && \
     \
