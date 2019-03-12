@@ -14,7 +14,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     # Instalando alguns pacotes iniciais
     apt-get install -y  iptables openssh-server rsync locales sudo vim less curl ca-certificates \
                         psmisc htop kmod iproute2 net-tools gnupg1 wget cron bridge-utils \
-                        consolekit pulseaudio lightdm usbutils pciutils ntp mate-terminal chromium \
+                        consolekit pulseaudio usbutils pciutils ntp mate-terminal chromium \
                         chromium-l10n iputils-ping nload nmap whois netcat pavucontrol vlc \
                         x2goclient ffmpeg curl dialog gdb pulseaudio-equalizer qasmixer qashctl \
                         qasconfig playonlinux wine winetricks git cmake rtl-sdr eom dirmngr okular \
@@ -24,7 +24,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                         xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
                         iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
                         aspell-pt-br libreoffice-lightproof-pt-br network-manager-gnome gparted \
-                        dconf-tools pluma && \
+                        dconf-tools pluma fbcat lm-sensors caja && \
+    \
+    # Instalando o lxdm sem pacotes extras
+    apt install -y -q --no-install-recommends lxdm && \
     \
     # Adicionando Backports para o LibreOffice
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -39,14 +42,16 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     # Adicionando chaves de repositorios
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90 && \
     wget -O - https://download.videolan.org/pub/debian/videolan-apt.asc | apt-key add - && \
+    wget -O - https://download.opensuse.org/repositories/shells:fish:release:3/Debian_9.0/Release.key | apt-key add - && \
     \
-    # Adicionando repositorios do Spotify e Video Lan Center
+    # Adicionando repositorios do Spotify, Video Lan Center e FISH
     echo "deb https://download.videolan.org/pub/debian/stable/ /" > /etc/apt/sources.list.d/video-lan-center.list && \
     echo "deb http://repository.spotify.com stable non-free" > /etc/apt/sources.list.d/spotify.list && \
+    echo 'deb http://download.opensuse.org/repositories/shells:/fish:/release:/3/Debian_9.0/ /' > /etc/apt/sources.list.d/shells:fish:release:3.list && \
     apt update && \
     \
     # Instalando pacotes da interface grafica em si e a biblioteca de DVD libdvdcss2
-    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme && \
+    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme fish && \
     \
     # Instalando o tema Adpta
     wget jpmsb.sj.ifsc.edu.br/adapta.tar.xz -O /adapta.tar.xz && \
@@ -58,14 +63,56 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     unzip open-sans.zip -d /usr/share/fonts/opentype/ && \
     rm -f open-sans.zip && \
     \
+    # Fonte Noto com Nerd Fonts
+    mkdir /usr/share/fonts/Nerd-Fonts/ && \
+    wget https://jpmsb.sj.ifsc.edu.br/Noto.zip -O /Noto.zip && \
+    unzip /Noto.zip -d / && \
+    cp -r /Noto /usr/share/fonts/Nerd-Fonts/ && \
+    rm -r /Noto.zip /Noto && \
+    fc-cache -f -v && \
+    \
+    # Criando terminalrc no skel
+    mkdir -p /etc/skel/.config/xfce4/terminal/ && \
+    echo "[Configuration]" > /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "FontName=NotoMono Nerd Font 12" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscAlwaysShowTabs=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscBell=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscBellUrgent=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscBordersDefault=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscCursorBlinks=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscCursorShape=TERMINAL_CURSOR_SHAPE_BLOCK" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscDefaultGeometry=80x24" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscInheritGeometry=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscMenubarDefault=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscMouseAutohide=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscMouseWheelZoom=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscToolbarDefault=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscConfirmClose=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscCycleTabs=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscTabCloseButtons=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscTabCloseMiddleClick=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscTabPosition=GTK_POS_TOP" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscHighlightUrls=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscMiddleClickOpensUri=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscCopyOnSelect=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscDefaultWorkingDir=" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscRewrapOnResize=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscUseShiftArrowsToScroll=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "MiscSlimTabs=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "ScrollingUnlimited=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    \
     # Fazendo uma limpeza
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* /root/.bash_history && \
     rm -rf /etc/ssh/*key* && \
     \
+    # Gambiarra para o ps
+    ln -s /bin/ps /usr/bin/ps && \
+    \
     # Criando usuarios
+    usermod -s /usr/bin/fish root && \
     addgroup --gid 1100 rancher && \
     addgroup --gid 1101 docker && \
-    useradd -u 1100 -g rancher -G docker,sudo,plugdev,dialout -c "Rancher,,," -m -s /bin/bash rancher && \
+    useradd -u 1100 -g rancher -G docker,sudo,plugdev,dialout,audio,video,netdev -c "Rancher,,," -m -s /usr/bin/fish rancher && \
     useradd -u 1101 -g docker -G docker,sudo -c "Docker,,," -m -s /bin/bash docker && \
     echo ClientAliveInterval 180 >> /etc/ssh/sshd_config && \
     echo '## allow password less for rancher user' >> /etc/sudoers && \
@@ -73,18 +120,28 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo '## allow password less for docker user' >> /etc/sudoers && \
     echo 'docker ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers && \
     \
-    # Ajustes no lightdm e libvirt
-    sed -i '105s/.*/greeter-hide-users=false/' /etc/lightdm/lightdm.conf && \
-    sed -i '22s/.*/greeter-user=root/' /etc/lightdm/lightdm.conf && \
+    # Ajustes no libvirt e adduser
     sed -i '85s/.*/unix_sock_group = "rancher"/' /etc/libvirt/libvirtd.conf && \
     sed -i '102s/.*/unix_sock_rw_perms = "0770"/' /etc/libvirt/libvirtd.conf && \
+    sed -i '6s:.*:DSHELL=/usr/bin/fish:' /etc/adduser.conf && \
+    sed -i '77s:.*:EXTRA_GROUPS="dialout cdrom audio video plugdev netdev":' /etc/adduser.conf && \
+    sed -i '81s:.*:ADD_EXTRA_GROUPS=1:' /etc/adduser.conf && \
     \
-    # Ajustes no polkit para usuario normal poder manipular dispositivos
-    sed -i '84s:.*:      <allow_any>yes</allow_any>:' /usr/share/polkit-1/actions/org.freedesktop.udisks2.policy && \
-    sed -i '985s:.*:      <allow_any>yes</allow_any>:' /usr/share/polkit-1/actions/org.freedesktop.udisks2.policy && \
-    sed -i '1340s:.*:      <allow_any>yes</allow_any>:' /usr/share/polkit-1/actions/org.freedesktop.udisks2.policy && \
-    sed -i '1548s:.*:      <allow_any>yes</allow_any>:' /usr/share/polkit-1/actions/org.freedesktop.udisks2.policy && \
-    sed -i '2070s:.*:      <allow_any>yes</allow_any>:' /usr/share/polkit-1/actions/org.freedesktop.udisks2.policy && \
+    # Regras para o Network-Manager
+    echo "[nm-applet]" > /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
+    echo "Identity=unix-group:netdev" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
+    echo "Action=org.freedesktop.NetworkManager.*" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
+    echo "ResultActive=yes" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
+    echo "ResultAny=yes" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
+    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
+    \
+    # Regras do Udisks2 para montagem de discos
+    echo "[Mount a system-internal device]" > /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
+    echo "Identity=unix-group:plugdev" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
+    echo "Action=org.freedesktop.udisks2.*" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
+    echo "ResultAny=yes" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
+    echo "ResultActive=yes" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
+    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \    
     \
     # Ajuste no horario e idioma
     echo "America/Sao_Paulo" > /etc/timezone && \
@@ -116,7 +173,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo 'echo "0 2147483647" > /proc/sys/net/ipv4/ping_group_range' >> /usr/local/bin/iniciar-tudo && \
     echo "cron" >> /usr/local/bin/iniciar-tudo && \
     echo "ntpd" >> /usr/local/bin/iniciar-tudo && \
-    echo "service lightdm start &" >> /usr/local/bin/iniciar-tudo && \
+    echo "service lxdm start &" >> /usr/local/bin/iniciar-tudo && \
     echo "ros console-init" >> /usr/local/bin/iniciar-tudo && \
     \
     # Alterando as permissoes do script de inicio
