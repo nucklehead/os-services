@@ -15,7 +15,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y  iptables openssh-server rsync locales sudo vim less curl ca-certificates \
                         psmisc htop kmod iproute2 net-tools gnupg1 wget cron bridge-utils \
                         consolekit pulseaudio usbutils pciutils ntp mate-terminal chromium \
-                        chromium-l10n iputils-ping nload nmap whois netcat pavucontrol vlc \
+                        chromium-l10n iputils-ping lightdm nload nmap whois netcat pavucontrol vlc \
                         x2goclient ffmpeg curl dialog gdb pulseaudio-equalizer qasmixer qashctl \
                         qasconfig playonlinux wine winetricks git cmake rtl-sdr eom dirmngr okular \
                         virt-manager qemu unrar lzop bzip2 galculator libvirt0 libvirt-daemon-system \
@@ -25,9 +25,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                         iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
                         aspell-pt-br libreoffice-lightproof-pt-br network-manager-gnome gparted \
                         dconf-tools pluma fbcat lm-sensors caja && \
-    \
-    # Instalando o lxdm sem pacotes extras
-    apt install -y -q --no-install-recommends lxdm && \
     \
     # Adicionando Backports para o LibreOffice
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -119,29 +116,77 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo 'rancher ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers && \
     echo '## allow password less for docker user' >> /etc/sudoers && \
     echo 'docker ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers && \
+    echo '## allow password less execution of nm-applet as a privileged user' >> /etc/sudoers && \
+    echo 'ALL ALL=(ALL) NOPASSWD: /usr/bin/nm-applet' >> /etc/sudoers && \
     \
-    # Ajustes no libvirt e adduser
+    # Ajustes no libvirt, adduser, autostart do nm-applet
+    sed -i '105s/.*/greeter-hide-users=false/' /etc/lightdm/lightdm.conf && \
+    sed -i '22s/.*/greeter-user=root/' /etc/lightdm/lightdm.conf && \
     sed -i '85s/.*/unix_sock_group = "rancher"/' /etc/libvirt/libvirtd.conf && \
     sed -i '102s/.*/unix_sock_rw_perms = "0770"/' /etc/libvirt/libvirtd.conf && \
     sed -i '6s:.*:DSHELL=/usr/bin/fish:' /etc/adduser.conf && \
     sed -i '77s:.*:EXTRA_GROUPS="dialout cdrom audio video plugdev netdev":' /etc/adduser.conf && \
     sed -i '81s:.*:ADD_EXTRA_GROUPS=1:' /etc/adduser.conf && \
+    sed -i '143s:.*:Exec=sh -c "sudo nm-applet":' /etc/xdg/autostart/nm-applet.desktop && \
     \
     # Regras para o Network-Manager
     echo "[nm-applet]" > /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
     echo "Identity=unix-group:netdev" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
-    echo "Action=org.freedesktop.NetworkManager.*" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
+    echo "Action=org.freedesktop.NetworkManager.enable-disable-network;org.freedesktop.NetworkManager.enable-disable-wifi;org.freedesktop.NetworkManager.enable-disable-wwan;org.freedesktop.NetworkManager.enable-disable-wimax;org.freedesktop.NetworkManager.network-control;org.freedesktop.NetworkManager.wifi.share.protected;org.freedesktop.NetworkManager.wifi.share.open;org.freedesktop.NetworkManager.settings.modify.own;org.freedesktop.NetworkManager.enable-disable-statistics" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
     echo "ResultActive=yes" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
     echo "ResultAny=yes" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
     echo "ResultInactive=no" >> /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
     \
-    # Regras do Udisks2 para montagem de discos
+    # Regras para montagem
     echo "[Mount a system-internal device]" > /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
     echo "Identity=unix-group:plugdev" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
-    echo "Action=org.freedesktop.udisks2.*" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
+    echo "Action=org.freedesktop.udisks2.filesystem-mount;org.freedesktop.udisks2.encrypted-unlock;org.freedesktop.udisks2.encrypted-change-passphrase;org.freedesktop.udisks2.loop-setup;org.freedesktop.udisks2.power-off-drive;org.freedesktop.udisks2.eject-media;org.freedesktop.udisks2.modify-device;org.freedesktop.udisks2.rescan;org.freedesktop.udisks2.ata-smart-update;org.freedesktop.udisks2.ata-check-power;org.freedesktop.udisks2.ata-standby;org.freedesktop.udisks2.cancel-job" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
     echo "ResultAny=yes" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
     echo "ResultActive=yes" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \
-    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \    
+    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/50-local.d/50-mount.pkla && \ 
+    \
+    # Regra para desligar e reiniciar o sistema
+    echo "[XFCE Session]" > /etc/polkit-1/localauthority/50-local.d/20-xfce-session.pkla && \
+    echo "Identity=unix-group:*" >> /etc/polkit-1/localauthority/50-local.d/20-xfce-session.pkla && \
+    echo "Action=org.xfce.session.xfsm-shutdown-helper" >> /etc/polkit-1/localauthority/50-local.d/20-xfce-session.pkla && \
+    echo "ResultActive=yes" >> /etc/polkit-1/localauthority/50-local.d/20-xfce-session.pkla && \
+    echo "ResultAny=yes" >> /etc/polkit-1/localauthority/50-local.d/20-xfce-session.pkla && \
+    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/50-local.d/20-xfce-session.pkla && \
+    \
+    # Regra para ajustar o brilho da tela
+    echo "[XFCE Backlight]" > /etc/polkit-1/localauthority/50-local.d/21-xfce-power.pkla && \
+    echo "Identity=unix-group:*" >> /etc/polkit-1/localauthority/50-local.d/21-xfce-power.pkla && \
+    echo "Action=org.xfce.power.backlight-helper;org.xfce.power.xfce4-pm-helper" >> /etc/polkit-1/localauthority/50-local.d/21-xfce-power.pkla && \
+    echo "ResultActive=yes" >> /etc/polkit-1/localauthority/50-local.d/21-xfce-power.pkla && \
+    echo "ResultAny=yes" >> /etc/polkit-1/localauthority/50-local.d/21-xfce-power.pkla && \
+    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/50-local.d/21-xfce-power.pkla && \
+    \
+    # Regra para ajuste de brilho da tela para Intel
+    echo "[Intel backlight]" > /etc/polkit-1/localauthority/50-local.d/22-org.x.xf86-video-intel.backlight-helper.pkla && \
+    echo "Identity=unix-group:*" >> /etc/polkit-1/localauthority/50-local.d/22-org.x.xf86-video-intel.backlight-helper.pkla && \
+    echo "Action=org.x.xf86-video-intel.backlight-helper" >> /etc/polkit-1/localauthority/50-local.d/22-org.x.xf86-video-intel.backlight-helper.pkla && \
+    echo "ResultActive=yes" >> /etc/polkit-1/localauthority/50-local.d/22-org.x.xf86-video-intel.backlight-helper.pkla && \
+    echo "ResultAny=yes" >> /etc/polkit-1/localauthority/50-local.d/22-org.x.xf86-video-intel.backlight-helper.pkla && \
+    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/50-local.d/22-org.x.xf86-video-intel.backlight-helper.pkla && \
+    \
+    # Regra para o login1
+    echo "[Login1]" > /etc/polkit-1/localauthority/50-local.d/23-org.freedesktop.login1.pkla && \
+    echo "Identity=unix-group:*" >> /etc/polkit-1/localauthority/50-local.d/23-org.freedesktop.login1.pkla && \
+    echo "Action=org.freedesktop.login1.inhibit-block-shutdown;org.freedesktop.login1.inhibit-block-sleep;org.freedesktop.login1.inhibit-handle-power-key;org.freedesktop.login1.inhibit-handle-suspend-key;org.freedesktop.login1.inhibit-handle-hibernate-key;org.freedesktop.login1.inhibit-handle-lid-switch;org.freedesktop.login1.power-off;org.freedesktop.login1.power-off-multiple-sessions;org.freedesktop.login1.reboot;org.freedesktop.login1.reboot-multiple-sessions;org.freedesktop.login1.suspend-multiple-sessions;org.freedesktop.login1.hibernate;org.freedesktop.login1.hibernate-multiple-sessions" >> /etc/polkit-1/localauthority/50-local.d/23-org.freedesktop.login1.pkla && \
+    echo "ResultActive=yes" >> /etc/polkit-1/localauthority/50-local.d/23-org.freedesktop.login1.pkla && \
+    echo "ResultAny=yes" >> /etc/polkit-1/localauthority/50-local.d/23-org.freedesktop.login1.pkla && \
+    echo "ResultInactive=no" >> /etc/polkit-1/localauthority/50-local.d/23-org.freedesktop.login1.pkla && \
+    \ 
+    # Habilitando o toque no touchpad
+    mkdir /etc/X11/xorg.conf.d/ && \
+    echo 'Section "InputClass"' > /etc/X11/xorg.conf.d/40-libinput.conf && \
+    echo '        Identifier "libinput touchpad catchall"' >> /etc/X11/xorg.conf.d/40-libinput.conf && \
+    echo '        MatchIsTouchpad "on"' >> /etc/X11/xorg.conf.d/40-libinput.conf && \
+    echo '        MatchDevicePath "/dev/input/event*"' >> /etc/X11/xorg.conf.d/40-libinput.conf && \
+    echo '        Driver "libinput"' >> /etc/X11/xorg.conf.d/40-libinput.conf && \
+    echo '        Option "Tapping" "on"' >> /etc/X11/xorg.conf.d/40-libinput.conf && \
+    echo '        Option "HorizontalScrolling" "0"' >> /etc/X11/xorg.conf.d/40-libinput.conf && \
+    echo 'EndSection' >> /etc/X11/xorg.conf.d/40-libinput.conf && \
     \
     # Ajuste no horario e idioma
     echo "America/Sao_Paulo" > /etc/timezone && \
@@ -173,7 +218,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo 'echo "0 2147483647" > /proc/sys/net/ipv4/ping_group_range' >> /usr/local/bin/iniciar-tudo && \
     echo "cron" >> /usr/local/bin/iniciar-tudo && \
     echo "ntpd" >> /usr/local/bin/iniciar-tudo && \
-    echo "service lxdm start &" >> /usr/local/bin/iniciar-tudo && \
+    echo "service lightdm start &" >> /usr/local/bin/iniciar-tudo && \
     echo "ros console-init" >> /usr/local/bin/iniciar-tudo && \
     \
     # Alterando as permissoes do script de inicio
