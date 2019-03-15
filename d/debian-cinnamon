@@ -6,7 +6,7 @@ console:
     io.rancher.os.scope: system
     io.rancher.os.after: network
     io.docker.compose.rebuild: "false"
-    io.rancher.os.console: debian-xfce
+    io.rancher.os.console: debian-cinnamon
   shm_size: 2048M
   volumes_from:
   - all-volumes
