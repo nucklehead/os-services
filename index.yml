@@ -23,6 +23,7 @@ consoles:
 - alpine
 - centos
 - debian
+- debian-cinnamon
 - debian-extras
 - debian-gnome
 - debian-kde
