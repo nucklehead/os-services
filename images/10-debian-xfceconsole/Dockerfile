@@ -12,26 +12,37 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt -y -q upgrade && \
     \
     # Instalando alguns pacotes iniciais
-    apt-get install -y  iptables openssh-server rsync locales sudo vim less curl ca-certificates \
-                        psmisc htop kmod iproute2 net-tools gnupg1 wget cron bridge-utils \
-                        consolekit pulseaudio usbutils pciutils ntp mate-terminal chromium \
-                        chromium-l10n iputils-ping lightdm nload nmap whois netcat pavucontrol vlc \
-                        x2goclient ffmpeg curl dialog gdb pulseaudio-equalizer qasmixer qashctl \
-                        qasconfig playonlinux wine winetricks git cmake rtl-sdr eom dirmngr okular \
-                        virt-manager qemu unrar lzop bzip2 galculator libvirt0 libvirt-daemon-system \
-                        qemu qemu-kvm qemu-utils engrampa mate-system-monitor gnome-disk-utility \ 
-                        apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils libglib2.0-bin \
-                        xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
-                        iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
-                        aspell-pt-br libreoffice-lightproof-pt-br network-manager-gnome gparted \
-                        dconf-tools pluma fbcat lm-sensors caja && \
+    apt-get install -y iptables openssh-server rsync locales sudo vim less curl ca-certificates \
+                       psmisc htop kmod iproute2 net-tools gnupg1 wget cron bridge-utils \
+                       consolekit pulseaudio usbutils pciutils ntp chromium g++ audacity flatpak \
+                       chromium-l10n iputils-ping nload nmap whois netcat pavucontrol vlc \
+                       x2goclient ffmpeg curl dialog gdb pulseaudio-equalizer qasmixer qashctl \
+                       qasconfig playonlinux wine winetricks git cmake rtl-sdr dirmngr libelf-dev \
+                       virt-manager qemu unrar lzop bzip2 libvirt0 libvirt-daemon-system \
+                       qemu qemu-kvm qemu-utils gvfs-backends nomacs nomacs-l10n openresolv \ 
+                       apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils libglib2.0-bin \
+                       xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
+                       iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
+                       aspell-pt-br libreoffice-lightproof-pt-br galculator \
+                       dconf-tools fbcat lm-sensors && \
     \
+    # Instalando o lightdm
+    apt -y -q install --no-install-recommends lightdm && \
+    \
+    # Alguns aplicativos do Gnome
+    apt -y -q install --no-install-recommends network-manager-gnome gparted gnome-calculator gnome-disk-utility && \
+    \
+    # Alguns aplicativos do MATE
+    apt -y -q install --no-install-recommends mate-system-monitor engrampa pluma && \
+    \
+    # Alguns aplicativos do KDE
+    apt -y -q install --no-install-recommends okular && \
     # Adicionando Backports para o LibreOffice
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
     apt update && \
     \
-    # Instalando o LibreOffice
-    apt -y -q install -t stretch-backports libreoffice libreoffice-l10n-pt-br libreoffice-help-pt-br libreoffice-officebean libreoffice-avmedia-backend-vlc libreoffice-gtk3 libreoffice-pdfimport libreoffice-subsequentcheckbase && \
+    # Instalando o LibreOffice e compilador de Go
+    apt -y -q install -t stretch-backports libreoffice libreoffice-l10n-pt-br libreoffice-help-pt-br libreoffice-officebean libreoffice-avmedia-backend-vlc libreoffice-gtk3 libreoffice-pdfimport libreoffice-subsequentcheckbase golang && \
     \
     # Comentando Backport
     echo "# deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -48,9 +59,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     \
     # Instalando pacotes da interface grafica em si e a biblioteca de DVD libdvdcss2
-    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme fish && \
+    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme fish thunar-dropbox-plugin && \
     \
-    # Instalando o tema Adpta
+    # Instalando o tema Adapta
     wget jpmsb.sj.ifsc.edu.br/adapta.tar.xz -O /adapta.tar.xz && \
     tar -xvf /adapta.tar.xz -C /usr/share/themes/ && \
     rm -r /adapta.tar.xz && \
@@ -67,6 +78,19 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     cp -r /Noto /usr/share/fonts/Nerd-Fonts/ && \
     rm -r /Noto.zip /Noto && \
     fc-cache -f -v && \
+    \
+    # Desktop do Equalizador do Pulseaudio
+    echo "[Desktop Entry]" > /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Version=1.0" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Encoding=UTF-8" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Name=PulseAudio Equalizer" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "GenericName=Equalizer" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Comment=PulseAudio" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Exec=qpaeq" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Icon=multimedia-volume-control" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "StartupNotify=true" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Type=Application" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
+    echo "Categories=AudioVideo;Audio;Mixer;GTK;" >> /usr/share/applications/pulseaudio-equalizer.desktop && \
     \
     # Criando terminalrc no skel
     mkdir -p /etc/skel/.config/xfce4/terminal/ && \
@@ -98,6 +122,21 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "MiscSlimTabs=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
     echo "ScrollingUnlimited=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
     \
+    # Definindo o layout de teclado para ABNT 2
+    mkdir -p /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/ && \
+    echo '<?xml version="1.0" encoding="UTF-8"?>' > /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '<channel name="keyboard-layout" version="1.0">' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '  <property name="Default" type="empty">' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '    <property name="XkbDisable" type="bool" value="false"/>' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '    <property name="XkbLayout" type="string" value="br"/>' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '    <property name="XkbVariant" type="string" value=""/>' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '  </property>' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    echo '</channel>' >> /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/keyboard-layout.xml && \
+    \
+    # Remover o pacote light-locker para previnir que a tela deixe de ser exibida ao retornar no bloqueio do lightdm
+    apt -y -q purge light-locker && \
+    \
     # Fazendo uma limpeza
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* /root/.bash_history && \
     rm -rf /etc/ssh/*key* && \
@@ -105,11 +144,18 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     # Gambiarra para o ps
     ln -s /bin/ps /usr/bin/ps && \
     \
+    # Carregar modulos para o Equalizador do Pulseaudio
+    echo "" >> /etc/pulse/default.pa && \
+    echo "load-module module-equalizer-sink" >> /etc/pulse/default.pa && \
+    echo "load-module module-dbus-protocol" >> /etc/pulse/default.pa && \
+    \
+    # Truque do UDEV para impedir nomes longos em adaptadores Wi-Fi
+    ln -s /dev/null /etc/udev/rules.d/80-net-setup-link.rules && \
+    \
     # Criando usuarios
-    usermod -s /usr/bin/fish root && \
     addgroup --gid 1100 rancher && \
     addgroup --gid 1101 docker && \
-    useradd -u 1100 -g rancher -G docker,sudo,plugdev,dialout,audio,video,netdev -c "Rancher,,," -m -s /usr/bin/fish rancher && \
+    useradd -u 1100 -g rancher -G docker,sudo,plugdev,dialout,audio,video,netdev -c "Rancher,,," -m -s /bin/bash rancher && \
     useradd -u 1101 -g docker -G docker,sudo -c "Docker,,," -m -s /bin/bash docker && \
     echo ClientAliveInterval 180 >> /etc/ssh/sshd_config && \
     echo '## allow password less for rancher user' >> /etc/sudoers && \
@@ -121,7 +167,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     \
     # Ajustes no libvirt, adduser, autostart do nm-applet
     sed -i '105s/.*/greeter-hide-users=false/' /etc/lightdm/lightdm.conf && \
-    sed -i '22s/.*/greeter-user=root/' /etc/lightdm/lightdm.conf && \
     sed -i '85s/.*/unix_sock_group = "rancher"/' /etc/libvirt/libvirtd.conf && \
     sed -i '102s/.*/unix_sock_rw_perms = "0770"/' /etc/libvirt/libvirtd.conf && \
     sed -i '6s:.*:DSHELL=/usr/bin/fish:' /etc/adduser.conf && \
@@ -218,7 +263,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo 'echo "0 2147483647" > /proc/sys/net/ipv4/ping_group_range' >> /usr/local/bin/iniciar-tudo && \
     echo "cron" >> /usr/local/bin/iniciar-tudo && \
     echo "ntpd" >> /usr/local/bin/iniciar-tudo && \
-    echo "service lightdm start &" >> /usr/local/bin/iniciar-tudo && \
+    echo "sleep 5 ; service lightdm start &" >> /usr/local/bin/iniciar-tudo && \
     echo "ros console-init" >> /usr/local/bin/iniciar-tudo && \
     \
     # Alterando as permissoes do script de inicio
