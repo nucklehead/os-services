@@ -8,6 +8,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "deb http://debian.pop-sc.rnp.br/debian stretch main contrib non-free" > /etc/apt/sources.list && \
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-updates main contrib non-free" >> /etc/apt/sources.list && \
     echo "deb http://security.debian.org stretch/updates main contrib non-free" >> /etc/apt/sources.list && \
+    \
+    # Adicionando arquitetura 32 bits
+    dpkg --add-architecture i386 && \
+    \
+    # Atualizar a lista de pacotes
     apt-get update && \
     apt -y -q upgrade && \
     \
@@ -17,20 +22,20 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                        consolekit pulseaudio usbutils pciutils ntp chromium g++ audacity flatpak \
                        chromium-l10n iputils-ping nload nmap whois netcat pavucontrol vlc \
                        x2goclient ffmpeg curl dialog gdb pulseaudio-equalizer qasmixer qashctl \
-                       qasconfig playonlinux wine winetricks git cmake rtl-sdr dirmngr libelf-dev \
-                       virt-manager qemu unrar lzop bzip2 libvirt0 libvirt-daemon-system \
+                       qasconfig wine32 winetricks git cmake rtl-sdr dirmngr libelf-dev xterm \
+                       virt-manager qemu unrar lzop bzip2 libvirt0 libvirt-daemon-system dnsutils \
                        qemu qemu-kvm qemu-utils gvfs-backends nomacs nomacs-l10n openresolv \ 
                        apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils libglib2.0-bin \
                        xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
                        iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
-                       aspell-pt-br libreoffice-lightproof-pt-br galculator \
+                       aspell-pt-br libreoffice-lightproof-pt-br galculator disk-manager \
                        dconf-tools fbcat lm-sensors && \
     \
     # Instalando o lightdm
     apt -y -q install --no-install-recommends lightdm && \
     \
     # Alguns aplicativos do Gnome
-    apt -y -q install --no-install-recommends network-manager-gnome gparted gnome-calculator gnome-disk-utility && \
+    apt -y -q install --no-install-recommends network-manager-gnome gparted gnome-calculator gnome-disk-utility gnome-software-plugin-flatpak && \
     \
     # Alguns aplicativos do MATE
     apt -y -q install --no-install-recommends mate-system-monitor engrampa pluma && \
@@ -51,15 +56,19 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90 && \
     wget -O - https://download.videolan.org/pub/debian/videolan-apt.asc | apt-key add - && \
     wget -O - https://download.opensuse.org/repositories/shells:fish:release:3/Debian_9.0/Release.key | apt-key add - && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
+    wget -q "http://deb.playonlinux.com/public.gpg" -O- | apt-key add - && \
     \
     # Adicionando repositorios do Spotify, Video Lan Center e FISH
     echo "deb https://download.videolan.org/pub/debian/stable/ /" > /etc/apt/sources.list.d/video-lan-center.list && \
     echo "deb http://repository.spotify.com stable non-free" > /etc/apt/sources.list.d/spotify.list && \
     echo 'deb http://download.opensuse.org/repositories/shells:/fish:/release:/3/Debian_9.0/ /' > /etc/apt/sources.list.d/shells:fish:release:3.list && \
+    echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" >> /etc/apt/sources.list && \
+    wget http://deb.playonlinux.com/playonlinux_stretch.list -O /etc/apt/sources.list.d/playonlinux.list && \
     apt update && \
     \
     # Instalando pacotes da interface grafica em si e a biblioteca de DVD libdvdcss2
-    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme fish thunar-dropbox-plugin && \
+    apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme fish thunar-dropbox-plugin playonlinux && \
     \
     # Instalando o tema Adapta
     wget jpmsb.sj.ifsc.edu.br/adapta.tar.xz -O /adapta.tar.xz && \
@@ -253,6 +262,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "#!/bin/bash" > /usr/local/bin/iniciar-tudo && \
     echo "" >> /usr/local/bin/iniciar-tudo && \
     echo "mount -o remount,size=1G /dev/shm" >> /usr/local/bin/iniciar-tudo && \
+    echo "rm -r /tmp/.X0-lock /tmp/.X11-unix" >> /usr/local/bin/iniciar-tudo && \
     echo "service dbus start" >> /usr/local/bin/iniciar-tudo && \
     echo "service udev start" >> /usr/local/bin/iniciar-tudo && \
     echo "service rsyslog start" >> /usr/local/bin/iniciar-tudo && \
@@ -263,7 +273,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo 'echo "0 2147483647" > /proc/sys/net/ipv4/ping_group_range' >> /usr/local/bin/iniciar-tudo && \
     echo "cron" >> /usr/local/bin/iniciar-tudo && \
     echo "ntpd" >> /usr/local/bin/iniciar-tudo && \
-    echo "sleep 5 ; service lightdm start &" >> /usr/local/bin/iniciar-tudo && \
+    echo 'sleep 2 && bash -c "/etc/init.d/lightdm start" &' >> /usr/local/bin/iniciar-tudo && \
     echo "ros console-init" >> /usr/local/bin/iniciar-tudo && \
     \
     # Alterando as permissoes do script de inicio
