@@ -16,7 +16,14 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                         psmisc htop kmod iproute2 net-tools gnupg1 wget cron bridge-utils usbutils \
                         pciutils ntp iputils-ping nload nmap whois netcat dialog dirmngr unrar bzip2 \
                         apt-transport-https apt-utils arp-scan speedtest-cli tcpdump traceroute iperf \
-                        iptraf telnet aptitude aptitude-robot udev rsyslog gcc make perl libelf-dev && \
+                        iptraf telnet aptitude aptitude-robot udev rsyslog gcc make perl libelf-dev \ 
+                        lm-sensors && \
+    \
+    # Interpretador FISH
+    wget -O - https://download.opensuse.org/repositories/shells:fish:release:3/Debian_9.0/Release.key | apt-key add - && \
+    echo 'deb http://download.opensuse.org/repositories/shells:/fish:/release:/3/Debian_9.0/ /' > /etc/apt/sources.list.d/shells:fish:release:3.list && \
+    apt update && \
+    apt -y -q install fish && \
     \
     # Fazendo uma limpeza
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* /root/.bash_history && \
@@ -26,10 +33,17 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     wget https://raw.githubusercontent.com/jpmsb/gui/master/scripts/pacote -O /usr/local/bin/pacote && \
     chmod 555 /usr/local/bin/pacote && \
     \
+    # Gambiarra para o ps
+    ln -s /bin/ps /usr/bin/ps && \
+    \
+    # Ajustes no adduser
+    sed -i '6s:.*:DSHELL=/usr/bin/fish:' /etc/adduser.conf && \
+    \
     # Criando usuarios
+    usermod -s /usr/bin/fish root && \
     addgroup --gid 1100 rancher && \
     addgroup --gid 1101 docker && \
-    useradd -u 1100 -g rancher -G docker,sudo,plugdev,dialout -c "Rancher,,," -m -s /bin/bash rancher && \
+    useradd -u 1100 -g rancher -G docker,sudo,plugdev,dialout -c "Rancher,,," -m -s /usr/bin/fish rancher && \
     useradd -u 1101 -g docker -G docker,sudo -c "Docker,,," -m -s /bin/bash docker && \
     echo ClientAliveInterval 180 >> /etc/ssh/sshd_config && \
     echo '## allow password less for rancher user' >> /etc/sudoers && \
@@ -50,6 +64,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     locale-gen --purge en_US.UTF-8 && \
     bash -c "echo -e 'LANG="pt_BR.UTF-8"\nLANGUAGE="pt_BR:br"\n'" > /etc/default/locale && \
     \
+    # Adicionando a logo do RancherOS quando se faz SSH
+    echo -n "#!/bin/bash\n\ncat << \EOF\n               ,        , ______                 _                 _____ _____TM\n  ,------------|'------'| | ___ \               | |               /  _  /  ___|\n / .           '-'    |-  | |_/ /__ _ _ __   ___| |__   ___ _ __  | | | \ '--.\n \/|             |    |   |    // _' | '_ \ / __| '_ \ / _ \ '__' | | | |'--. \ \n   |   .________.'----'   | |\ \ (_| | | | | (__| | | |  __/ |    | \_/ /\__/ /\n   |   |        |   |     \_| \_\__,_|_| |_|\___|_| |_|\___|_|     \___/\____/\nEOF\n\ncat << EOF\n   \___/        \___/     Linux \$(uname -r)\n\n         RancherOS \$(uname -v) \$(hostname)\nEOF" > /etc/update-motd.d/00-header && \
+    \
+    # Zerando a variavel DEBIAN_FRONTEND
     unset DEBIAN_FRONTEND && \
     \
     # Script que inicia todo o conjunto necessario para o bom funcionamento do console
