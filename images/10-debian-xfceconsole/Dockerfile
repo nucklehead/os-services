@@ -28,7 +28,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
                        apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils libglib2.0-bin \
                        xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
                        iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
-                       aspell-pt-br libreoffice-lightproof-pt-br galculator disk-manager \
+                       aspell-pt-br libreoffice-lightproof-pt-br galculator disk-manager geoclue-2.0 \
                        dconf-tools fbcat lm-sensors && \
     \
     # Instalando o lightdm
@@ -42,6 +42,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     \
     # Alguns aplicativos do KDE
     apt -y -q install --no-install-recommends okular && \
+    \
     # Adicionando Backports para o LibreOffice
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
     apt update && \
@@ -56,19 +57,22 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90 && \
     wget -O - https://download.videolan.org/pub/debian/videolan-apt.asc | apt-key add - && \
     wget -O - https://download.opensuse.org/repositories/shells:fish:release:3/Debian_9.0/Release.key | apt-key add - && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
     wget -q "http://deb.playonlinux.com/public.gpg" -O- | apt-key add - && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 73C3DB2A && \
     \
     # Adicionando repositorios do Spotify, Video Lan Center e FISH
     echo "deb https://download.videolan.org/pub/debian/stable/ /" > /etc/apt/sources.list.d/video-lan-center.list && \
     echo "deb http://repository.spotify.com stable non-free" > /etc/apt/sources.list.d/spotify.list && \
     echo 'deb http://download.opensuse.org/repositories/shells:/fish:/release:/3/Debian_9.0/ /' > /etc/apt/sources.list.d/shells:fish:release:3.list && \
-    echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" >> /etc/apt/sources.list && \
     wget http://deb.playonlinux.com/playonlinux_stretch.list -O /etc/apt/sources.list.d/playonlinux.list && \
+    echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" >> /etc/apt/sources.list.d/java-8-oracle && \
     apt update && \
     \
     # Instalando pacotes da interface grafica em si e a biblioteca de DVD libdvdcss2
     apt -y -q install spotify-client xfce4 xfce4-goodies xfce4-screenshooter xfce4-notes-plugin xfce4-terminal xfce4-datetime-plugin xfce4-topmenu-plugin xfce4-whiskermenu-plugin libappindicator1 albatross-gtk-theme arc-theme xscreensaver libdvdcss2 breeze-icon-theme breeze-cursor-theme fish thunar-dropbox-plugin playonlinux && \
+    \
+    # Adicionar repositorio flathub ao flatpak
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && \
     \
     # Instalando o tema Adapta
     wget jpmsb.sj.ifsc.edu.br/adapta.tar.xz -O /adapta.tar.xz && \
@@ -87,6 +91,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     cp -r /Noto /usr/share/fonts/Nerd-Fonts/ && \
     rm -r /Noto.zip /Noto && \
     fc-cache -f -v && \
+    \
+    # Configurar o VIM
+    echo -n "set number\nsy on\nset paste\nset background=dark" > /root.vimrc && \
     \
     # Desktop do Equalizador do Pulseaudio
     echo "[Desktop Entry]" > /usr/share/applications/pulseaudio-equalizer.desktop && \
@@ -130,6 +137,65 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "MiscUseShiftArrowsToScroll=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
     echo "MiscSlimTabs=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
     echo "ScrollingUnlimited=TRUE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    echo "ScrollingOnOutput=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
+    \
+    # Criar script que instala o Java 8 da Oracle. Meu servidor vai acabar um dia!!!!!!!!!
+    echo "#!/bin/bash" > /usr/local/bin/instalar-java-8-oracle && \
+    echo "" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "apt update && apt -y -q install java-common" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "wget https://jpmsb.sj.ifsc.edu.br/java8.tar.gz -O /java8.tar.gz" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "mkdir -p /usr/lib/jvm/java-8-oracle/" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "tar -xvf /java8.tar.gz -C /usr/lib/jvm/" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "rm -r /java8.tar.gz" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/ControlPanel ControlPanel /usr/lib/jvm/java-8-oracle/jre/bin/ControlPanel 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8-oracle/jre/bin/java 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/javaws javaws /usr/lib/jvm/java-8-oracle/jre/bin/javaws 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jcontrol jcontrol /usr/lib/jvm/java-8-oracle/jre/bin/jcontrol 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jjs jjs /usr/lib/jvm/java-8-oracle/jre/bin/jjs 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/java-8-oracle/jre/bin/keytool 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/orbd orbd /usr/lib/jvm/java-8-oracle/jre/bin/orbd 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/pack200 pack200 /usr/lib/jvm/java-8-oracle/jre/bin/pack200 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/policytool policytool /usr/lib/jvm/java-8-oracle/jre/bin/policytool 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/rmid rmid /usr/lib/jvm/java-8-oracle/jre/bin/rmid 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/rmiregistry rmiregistry /usr/lib/jvm/java-8-oracle/jre/bin/rmiregistry 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/servertool servertool /usr/lib/jvm/java-8-oracle/jre/bin/servertool 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/tnameserv tnameserv /usr/lib/jvm/java-8-oracle/jre/bin/tnameserv 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/unpack200 unpack200 /usr/lib/jvm/java-8-oracle/jre/bin/unpack200 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/lib/jexec jexec /usr/lib/jvm/java-8-oracle/jre/lib/jexec 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/appletviewer appletviewer /usr/lib/jvm/java-8-oracle/bin/appletviewer 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/extcheck extcheck /usr/lib/jvm/java-8-oracle/bin/extcheck 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/idlj idlj /usr/lib/jvm/java-8-oracle/bin/idlj 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/java-8-oracle/bin/jar 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/java-8-oracle/bin/jarsigner 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-8-oracle/bin/javac 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/javadoc javadoc /usr/lib/jvm/java-8-oracle/bin/javadoc 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/javafxpackager javafxpackager /usr/lib/jvm/java-8-oracle/bin/javafxpackager 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/javah javah /usr/lib/jvm/java-8-oracle/bin/javah 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/javap javap /usr/lib/jvm/java-8-oracle/bin/javap 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/javapackager javapackager /usr/lib/jvm/java-8-oracle/bin/javapackager 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jcmd jcmd /usr/lib/jvm/java-8-oracle/bin/jcmd 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jconsole jconsole /usr/lib/jvm/java-8-oracle/bin/jconsole 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jdb jdb /usr/lib/jvm/java-8-oracle/bin/jdb 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jdeps jdeps /usr/lib/jvm/java-8-oracle/bin/jdeps 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jhat jhat /usr/lib/jvm/java-8-oracle/bin/jhat 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jinfo jinfo /usr/lib/jvm/java-8-oracle/bin/jinfo 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jmap jmap /usr/lib/jvm/java-8-oracle/bin/jmap 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jmc jmc /usr/lib/jvm/java-8-oracle/bin/jmc 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jps jps /usr/lib/jvm/java-8-oracle/bin/jps 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jrunscript jrunscript /usr/lib/jvm/java-8-oracle/bin/jrunscript 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jsadebugd jsadebugd /usr/lib/jvm/java-8-oracle/bin/jsadebugd 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jstack jstack /usr/lib/jvm/java-8-oracle/bin/jstack 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jstat jstat /usr/lib/jvm/java-8-oracle/bin/jstat 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jstatd jstatd /usr/lib/jvm/java-8-oracle/bin/jstatd 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/jvisualvm jvisualvm /usr/lib/jvm/java-8-oracle/bin/jvisualvm 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/native2ascii native2ascii /usr/lib/jvm/java-8-oracle/bin/native2ascii 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/rmic rmic /usr/lib/jvm/java-8-oracle/bin/rmic 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/schemagen schemagen /usr/lib/jvm/java-8-oracle/bin/schemagen 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/serialver serialver /usr/lib/jvm/java-8-oracle/bin/serialver 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/wsgen wsgen /usr/lib/jvm/java-8-oracle/bin/wsgen 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/wsimport wsimport /usr/lib/jvm/java-8-oracle/bin/wsimport 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-alternatives --install /usr/bin/xjc xjc /usr/lib/jvm/java-8-oracle/bin/xjc 180" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "update-java-alternatives -s java-8-oracle" >> /usr/local/bin/instalar-java-8-oracle && \
     \
     # Definindo o layout de teclado para ABNT 2
     mkdir -p /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/ && \
@@ -256,6 +322,17 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     locale-gen --purge en_US.UTF-8 && \
     bash -c "echo -e 'LANG="pt_BR.UTF-8"\nLANGUAGE="pt_BR:br"\n'" > /etc/default/locale && \
     \
+    # Adicionando a logo do RancherOS quando se faz SSH
+    echo -n "#!/bin/bash\n\ncat << \EOF\n               ,        , ______                 _                 _____ _____TM\n  ,------------|'------'| | ___ \               | |               /  _  /  ___|\n / .           '-'    |-  | |_/ /__ _ _ __   ___| |__   ___ _ __  | | | \ '--.\n \/|             |    |   |    // _' | '_ \ / __| '_ \ / _ \ '__' | | | |'--. \ \n   |   .________.'----'   | |\ \ (_| | | | | (__| | | |  __/ |    | \_/ /\__/ /\n   |   |        |   |     \_| \_\__,_|_| |_|\___|_| |_|\___|_|     \___/\____/\nEOF\n\ncat << EOF\n   \___/        \___/     Linux \$(uname -r)\n\n         RancherOS \$(uname -v) \$(hostname)\nEOF" > /etc/update-motd.d/00-header && \
+    \
+    # Criando script que toca em /dev/sr0
+    echo -n "#!/bin/bash\n\nwhile (true);do\n    touch /dev/sr0\n    sleep 1\ndone" > /usr/local/bin/tocar-sr0 && \
+    chmod 100 /usr/local/bin/tocar-sr0 && \
+    \
+    # Desabilitando o travamento do CD pelo kernel
+    echo "sys.dev.cdrom.lock=0" >> /etc/sysctl.conf && \
+    \
+    # Zerando a variavel DEBIAN_FRONTEND
     unset DEBIAN_FRONTEND && \
     \
     # Script que inicia todo o conjunto necessario para o bom funcionamento do console
@@ -263,6 +340,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "" >> /usr/local/bin/iniciar-tudo && \
     echo "mount -o remount,size=1G /dev/shm" >> /usr/local/bin/iniciar-tudo && \
     echo "rm -r /tmp/.X0-lock /tmp/.X11-unix" >> /usr/local/bin/iniciar-tudo && \
+    echo "/usr/local/bin/tocar-sr0 &" >> /usr/local/bin/iniciar-tudo && \
     echo "service dbus start" >> /usr/local/bin/iniciar-tudo && \
     echo "service udev start" >> /usr/local/bin/iniciar-tudo && \
     echo "service rsyslog start" >> /usr/local/bin/iniciar-tudo && \
