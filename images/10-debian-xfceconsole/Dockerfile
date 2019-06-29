@@ -20,19 +20,19 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y iptables openssh-server rsync locales sudo vim less curl ca-certificates \
                        psmisc htop kmod iproute2 net-tools gnupg1 wget cron bridge-utils \
                        consolekit pulseaudio usbutils pciutils ntp chromium g++ audacity flatpak \
-                       chromium-l10n iputils-ping nload nmap whois netcat pavucontrol vlc \
+                       chromium-l10n iputils-ping nload nmap whois netcat pavucontrol vlc etherwake \
                        x2goclient ffmpeg curl dialog gdb pulseaudio-equalizer qasmixer qashctl \
                        qasconfig wine32 winetricks git cmake rtl-sdr dirmngr libelf-dev xterm \
                        virt-manager qemu unrar lzop bzip2 libvirt0 libvirt-daemon-system dnsutils \
-                       qemu qemu-kvm qemu-utils gvfs-backends nomacs nomacs-l10n openresolv \ 
+                       qemu qemu-kvm qemu-utils gvfs-backends nomacs nomacs-l10n openresolv cups \ 
                        apt-transport-https fonts-noto fonts-roboto-hinted gdebi apt-utils libglib2.0-bin \
                        xscreensaver-screensaver-bsod arp-scan speedtest-cli tcpdump traceroute iperf \
                        iptraf telnet wireshark aptitude aptitude-robot rsyslog hunspell hunspell-pt-br \
                        aspell-pt-br libreoffice-lightproof-pt-br galculator disk-manager geoclue-2.0 \
-                       dconf-tools fbcat lm-sensors && \
+                       dconf-tools fbcat lm-sensors terminator sox libsox-fmt-all alsa-utils paprefs && \
     \
     # Instalando o lightdm
-    apt -y -q install --no-install-recommends lightdm && \
+    apt -y -q install --no-install-recommends lightdm lightdm-gtk-greeter-settings && \
     \
     # Alguns aplicativos do Gnome
     apt -y -q install --no-install-recommends network-manager-gnome gparted gnome-calculator gnome-disk-utility gnome-software-plugin-flatpak && \
@@ -41,14 +41,14 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt -y -q install --no-install-recommends mate-system-monitor engrampa pluma && \
     \
     # Alguns aplicativos do KDE
-    apt -y -q install --no-install-recommends okular && \
+    apt -y -q install --no-install-recommends okular kcolorchooser && \
     \
     # Adicionando Backports para o LibreOffice
     echo "deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
     apt update && \
     \
     # Instalando o LibreOffice e compilador de Go
-    apt -y -q install -t stretch-backports libreoffice libreoffice-l10n-pt-br libreoffice-help-pt-br libreoffice-officebean libreoffice-avmedia-backend-vlc libreoffice-gtk3 libreoffice-pdfimport libreoffice-subsequentcheckbase golang && \
+    apt -y -q install -t stretch-backports libreoffice libreoffice-l10n-pt-br libreoffice-help-pt-br libreoffice-officebean libreoffice-avmedia-backend-vlc libreoffice-gtk3 libreoffice-pdfimport libreoffice-subsequentcheckbase golang hplip hplip-data && \
     \
     # Comentando Backport
     echo "# deb http://debian.pop-sc.rnp.br/debian stretch-backports main contrib non-free" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -140,11 +140,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "ScrollingOnOutput=FALSE" >> /etc/skel/.config/xfce4/terminal/terminalrc && \
     \
     # Criar script que instala o Java 8 da Oracle. Meu servidor vai acabar um dia!!!!!!!!!
-    echo "#!/bin/bash" > /usr/local/bin/instalar-java-8-oracle && \
+    echo '#!/bin/bash' > /usr/local/bin/instalar-java-8-oracle && \
     echo "" >> /usr/local/bin/instalar-java-8-oracle && \
     echo "apt update && apt -y -q install java-common" >> /usr/local/bin/instalar-java-8-oracle && \
     echo "wget https://jpmsb.sj.ifsc.edu.br/java8.tar.gz -O /java8.tar.gz" >> /usr/local/bin/instalar-java-8-oracle && \
-    echo "mkdir -p /usr/lib/jvm/java-8-oracle/" >> /usr/local/bin/instalar-java-8-oracle && \
+    echo "mkdir -p /usr/lib/jvm/" >> /usr/local/bin/instalar-java-8-oracle && \
     echo "tar -xvf /java8.tar.gz -C /usr/lib/jvm/" >> /usr/local/bin/instalar-java-8-oracle && \
     echo "rm -r /java8.tar.gz" >> /usr/local/bin/instalar-java-8-oracle && \
     echo "update-alternatives --install /usr/bin/ControlPanel ControlPanel /usr/lib/jvm/java-8-oracle/jre/bin/ControlPanel 180" >> /usr/local/bin/instalar-java-8-oracle && \
@@ -239,6 +239,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo 'docker ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers && \
     echo '## allow password less execution of nm-applet as a privileged user' >> /etc/sudoers && \
     echo 'ALL ALL=(ALL) NOPASSWD: /usr/bin/nm-applet' >> /etc/sudoers && \
+    echo 'ALL ALL=(ALL) NOPASSWD: /usr/bin/nm-connection-editor' >> /etc/sudoers && \
     \
     # Ajustes no libvirt, adduser, autostart do nm-applet
     sed -i '105s/.*/greeter-hide-users=false/' /etc/lightdm/lightdm.conf && \
@@ -247,7 +248,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     sed -i '6s:.*:DSHELL=/usr/bin/fish:' /etc/adduser.conf && \
     sed -i '77s:.*:EXTRA_GROUPS="dialout cdrom audio video plugdev netdev":' /etc/adduser.conf && \
     sed -i '81s:.*:ADD_EXTRA_GROUPS=1:' /etc/adduser.conf && \
-    sed -i '143s:.*:Exec=sh -c "sudo nm-applet":' /etc/xdg/autostart/nm-applet.desktop && \
+    sed -i 's.Exec=nm-applet.Exec=sh -c "sudo nm-applet".g' /etc/xdg/autostart/nm-applet.desktop && \
+    sed -i 's.Exec=nm-connection-editor.Exec=sh -c "sudo nm-connection-editor".g' /usr/share/applications/nm-connection-editor.desktop && \
+    sed -i 's.; default-sample-format = s16le.default-sample-format = float32le.g' /etc/pulse/daemon.conf && \
     \
     # Regras para o Network-Manager
     echo "[nm-applet]" > /etc/polkit-1/localauthority/10-vendor.d/org.freedesktop.NetworkManager.pkla && \
@@ -325,6 +328,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     # Adicionando a logo do RancherOS quando se faz SSH
     echo -n "#!/bin/bash\n\ncat << \EOF\n               ,        , ______                 _                 _____ _____TM\n  ,------------|'------'| | ___ \               | |               /  _  /  ___|\n / .           '-'    |-  | |_/ /__ _ _ __   ___| |__   ___ _ __  | | | \ '--.\n \/|             |    |   |    // _' | '_ \ / __| '_ \ / _ \ '__' | | | |'--. \ \n   |   .________.'----'   | |\ \ (_| | | | | (__| | | |  __/ |    | \_/ /\__/ /\n   |   |        |   |     \_| \_\__,_|_| |_|\___|_| |_|\___|_|     \___/\____/\nEOF\n\ncat << EOF\n   \___/        \___/     Linux \$(uname -r)\n\n         RancherOS \$(uname -v) \$(hostname)\nEOF" > /etc/update-motd.d/00-header && \
     \
+    # Adicionando a logo do RancherOS quando se faz SSH
+    echo -n "#!/bin/bash\n\ncat << \EOF\n               ,        , ______                 _                 _____ _____TM\n  ,------------|'------'| | ___ \               | |               /  _  /  ___|\n / .           '-'    |-  | |_/ /__ _ _ __   ___| |__   ___ _ __  | | | \ '--.\n \/|             |    |   |    // _' | '_ \ / __| '_ \ / _ \ '__' | | | |'--. \ \n   |   .________.'----'   | |\ \ (_| | | | | (__| | | |  __/ |    | \_/ /\__/ /\n   |   |        |   |     \_| \_\__,_|_| |_|\___|_| |_|\___|_|     \___/\____/\nEOF\n\ncat << EOF\n   \___/        \___/     Linux \$(uname -r)\n\n         RancherOS \$(uname -v) \$(hostname)\nEOF" >> /etc/profile && \
+    \
     # Criando script que toca em /dev/sr0
     echo -n "#!/bin/bash\n\nwhile (true);do\n    touch /dev/sr0\n    sleep 1\ndone" > /usr/local/bin/tocar-sr0 && \
     chmod 100 /usr/local/bin/tocar-sr0 && \
@@ -345,8 +351,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "service udev start" >> /usr/local/bin/iniciar-tudo && \
     echo "service rsyslog start" >> /usr/local/bin/iniciar-tudo && \
     echo "service libvirtd start" >> /usr/local/bin/iniciar-tudo && \
+    echo "service libvirt-guests start" >> /usr/local/bin/iniciar-tudo && \
     echo "service virtlogd start" >> /usr/local/bin/iniciar-tudo && \
     echo "service network-manager start" >> /usr/local/bin/iniciar-tudo && \
+    echo "service cups start" >> /usr/local/bin/iniciar-tudo && \
+    echo "service cups-browsed start" >> /usr/local/bin/iniciar-tudo && \
     echo "modprobe -r evbug" >> /usr/local/bin/iniciar-tudo && \
     echo 'echo "0 2147483647" > /proc/sys/net/ipv4/ping_group_range' >> /usr/local/bin/iniciar-tudo && \
     echo "cron" >> /usr/local/bin/iniciar-tudo && \
