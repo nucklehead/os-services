@@ -65,7 +65,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "deb http://repository.spotify.com stable non-free" > /etc/apt/sources.list.d/spotify.list && \
     echo 'deb http://download.opensuse.org/repositories/shells:/fish:/release:/3/Debian_9.0/ /' > /etc/apt/sources.list.d/shells:fish:release:3.list && \
     wget http://deb.playonlinux.com/playonlinux_stretch.list -O /etc/apt/sources.list.d/playonlinux.list && \
-    echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" >> /etc/apt/sources.list.d/java-8-oracle && \
+    echo "deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main" >> /etc/apt/sources.list.d/java-11-oracle.list && \
     apt update && \
     \
     # Instalando pacotes da interface grafica em si e a biblioteca de DVD libdvdcss2
@@ -91,6 +91,16 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     cp -r /Noto /usr/share/fonts/Nerd-Fonts/ && \
     rm -r /Noto.zip /Noto && \
     fc-cache -f -v && \
+    \
+    # Instalar o Webmin
+    rm /etc/apt/apt.conf.d/docker-gzip-indexes && \
+    rm /var/lib/apt/lists/*lz4 && \
+    apt-get -o Acquire::GzipIndexes=false update && \
+    apt -y -q install libauthen-pam-perl apt-show-versions && \
+    wget https://ufpr.dl.sourceforge.net/project/webadmin/webmin/1.910/webmin_1.910_all.deb -O /webmin.deb && \
+    dpkg -i /webmin.deb && \
+    rm -r /webmin.deb && \
+    apt update && \
     \
     # Configurar o VIM
     echo -n "set number\nsy on\nset paste\nset background=dark" > /root.vimrc && \
@@ -327,9 +337,13 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     \
     # Adicionando a logo do RancherOS quando se faz SSH
     echo -n "#!/bin/bash\n\ncat << \EOF\n               ,        , ______                 _                 _____ _____TM\n  ,------------|'------'| | ___ \               | |               /  _  /  ___|\n / .           '-'    |-  | |_/ /__ _ _ __   ___| |__   ___ _ __  | | | \ '--.\n \/|             |    |   |    // _' | '_ \ / __| '_ \ / _ \ '__' | | | |'--. \ \n   |   .________.'----'   | |\ \ (_| | | | | (__| | | |  __/ |    | \_/ /\__/ /\n   |   |        |   |     \_| \_\__,_|_| |_|\___|_| |_|\___|_|     \___/\____/\nEOF\n\ncat << EOF\n   \___/        \___/     Linux \$(uname -r)\n\n         RancherOS \$(uname -v) \$(hostname)\nEOF" > /etc/update-motd.d/00-header && \
+    chmod +x /etc/update-motd.d/00-header && \
     \
-    # Adicionando a logo do RancherOS quando se faz SSH
-    echo -n "#!/bin/bash\n\ncat << \EOF\n               ,        , ______                 _                 _____ _____TM\n  ,------------|'------'| | ___ \               | |               /  _  /  ___|\n / .           '-'    |-  | |_/ /__ _ _ __   ___| |__   ___ _ __  | | | \ '--.\n \/|             |    |   |    // _' | '_ \ / __| '_ \ / _ \ '__' | | | |'--. \ \n   |   .________.'----'   | |\ \ (_| | | | | (__| | | |  __/ |    | \_/ /\__/ /\n   |   |        |   |     \_| \_\__,_|_| |_|\___|_| |_|\___|_|     \___/\____/\nEOF\n\ncat << EOF\n   \___/        \___/     Linux \$(uname -r)\n\n         RancherOS \$(uname -v) \$(hostname)\nEOF" >> /etc/profile && \
+    # Adicionando a logo do RancherOS quando executa um novo BASH
+    echo -n "\n/etc/update-motd.d/00-header" >> /etc/bash.bashrc && \
+    \
+    # Adicionando a logo do RancherOS quando executa um novo FISH
+    echo -n "\nfunction fish_greeting\n    bash /etc/update-motd.d/00-header\nend" >> /etc/fish/config.fish && \
     \
     # Criando script que toca em /dev/sr0
     echo -n "#!/bin/bash\n\nwhile (true);do\n    touch /dev/sr0\n    sleep 1\ndone" > /usr/local/bin/tocar-sr0 && \
@@ -353,6 +367,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "service libvirtd start" >> /usr/local/bin/iniciar-tudo && \
     echo "service libvirt-guests start" >> /usr/local/bin/iniciar-tudo && \
     echo "service virtlogd start" >> /usr/local/bin/iniciar-tudo && \
+    echo "service webmin start" >> /usr/local/bin/iniciar-tudo && \
     echo "service network-manager start" >> /usr/local/bin/iniciar-tudo && \
     echo "service cups start" >> /usr/local/bin/iniciar-tudo && \
     echo "service cups-browsed start" >> /usr/local/bin/iniciar-tudo && \
