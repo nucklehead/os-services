@@ -1,5 +1,5 @@
 console:
-  image: ${REGISTRY_DOMAIN}/rancher/os-debianconsole:v1.5.2${SUFFIX}
+  image: ${REGISTRY_DOMAIN}/rancher/os-debianconsole:v1.5.3${SUFFIX}
   command: ros console-init
   privileged: true
   labels:
@@ -7,7 +7,6 @@ console:
     io.rancher.os.after: network
     io.docker.compose.rebuild: "false"
     io.rancher.os.console: debian
-  shm_size: 2048M
   volumes_from:
   - all-volumes
   volumes:
