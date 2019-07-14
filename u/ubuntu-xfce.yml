@@ -1,12 +1,12 @@
 console:
-  image: ${REGISTRY_DOMAIN}/jpmsb/os-ubuntu-xfceconsole:v1.5.2${SUFFIX}
+  image: ${REGISTRY_DOMAIN}/rancher/os-ubuntuconsole:v1.5.3${SUFFIX}
   command: ros console-init
   privileged: true
   labels:
     io.rancher.os.scope: system
     io.rancher.os.after: network
     io.docker.compose.rebuild: "false"
-    io.rancher.os.console: ubuntu-xfce
+    io.rancher.os.console: ubuntu
   volumes_from:
   - all-volumes
   volumes:
