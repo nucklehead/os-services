@@ -30,6 +30,7 @@ consoles:
 - debian-lxde
 - debian-mate
 - debian-xfce
+- debian-stretch-xfce
 - fedora
 - ubuntu
 engines:
