@@ -1,6 +1,6 @@
 services:
 - amazon-ecs-agent
-- crontab
+- container-cron
 - open-iscsi
 - zfs
 - kernel-extras
@@ -58,3 +58,6 @@ engines:
 - docker-18.09.5
 - docker-18.09.6
 - docker-18.09.7
+- docker-18.09.8
+- docker-19.03.0
+- docker-19.03.1
