@@ -1,5 +1,5 @@
 console:
-  image: ${REGISTRY_DOMAIN}/jpmsb/os-debian-cinnamonconsole:v1.5.3${SUFFIX}
+  image: ${REGISTRY_DOMAIN}/jpmsb/os-debian-cinnamonconsole:v1.5.4${SUFFIX}
   command: iniciar-tudo
   privileged: true
   labels:
