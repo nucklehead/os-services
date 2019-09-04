@@ -1,12 +1,12 @@
 console:
-  image: ${REGISTRY_DOMAIN}/jpmsb/os-debian-stretch-xfceconsole:v1.5.3${SUFFIX}
+  image: ${REGISTRY_DOMAIN}/jpmsb/os-debian-stretch-xfceconsole:v1.5.4${SUFFIX}
   command: iniciar-tudo
   privileged: true
   labels:
     io.rancher.os.scope: system
     io.rancher.os.after: network
     io.docker.compose.rebuild: "false"
-    io.rancher.os.console: debian-xfce
+    io.rancher.os.console: debian-stretch-xfce
   volumes_from:
   - all-volumes
   volumes:
