@@ -1,5 +1,5 @@
 console:
-  image: ${REGISTRY_DOMAIN}/jpmsb/antixlinux-devuan-xfce:v1.5.4${SUFFIX}
+  image: ${REGISTRY_DOMAIN}/jpmsb/antixlinux-devuan-xfceconsole:v1.5.4${SUFFIX}
   command: iniciar-tudo
   privileged: true
   labels:
