@@ -21,15 +21,9 @@ services:
 - pingan-amc
 consoles:
 - alpine
+- antiXLinux-devuan-xfce.yml
 - centos
 - debian
-- debian-cinnamon
-- debian-extras
-- debian-gnome
-- debian-kde
-- debian-lxde
-- debian-mate
-- debian-xfce
 - debian-stretch-xfce
 - fedora
 - ubuntu
