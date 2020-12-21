@@ -23,6 +23,7 @@ consoles:
 - alpine
 - centos
 - debian
+- debian-stretch-xfce
 - fedora
 - ubuntu
 engines:
