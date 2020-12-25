@@ -24,6 +24,7 @@ consoles:
 - centos
 - debian
 - debian-stretch-xfce
+- ubuntu-desktop-titek
 - fedora
 - ubuntu
 engines:
