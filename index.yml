@@ -25,6 +25,7 @@ consoles:
 - debian
 - debian-stretch-xfce
 - ubuntu-desktop-titek
+- ubuntu-desktop-titek-tmp
 - fedora
 - ubuntu
 engines:
